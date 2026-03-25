@@ -133,12 +133,25 @@ function SelectRow({ label, value, options, onChange }: {
 interface Props {
   opts: PatternOptions;
   text: TextConfig;
+  imgPreview: string | null;
+  imgThreshold: number;
+  imgInvert: boolean;
   onUpdateOpts: (p: Partial<PatternOptions>) => void;
   onUpdateText: (p: Partial<TextConfig>) => void;
+  onImageLoad: (blob: Blob) => void;
+  onImageClear: () => void;
+  onImgThreshold: (v: number) => void;
+  onImgInvert: (v: boolean) => void;
   onExport: () => void;
 }
 
-export default function Sidebar({ opts, text, onUpdateOpts, onUpdateText, onExport }: Props) {
+export default function Sidebar({
+  opts, text,
+  imgPreview, imgThreshold, imgInvert,
+  onUpdateOpts, onUpdateText,
+  onImageLoad, onImageClear, onImgThreshold, onImgInvert,
+  onExport,
+}: Props) {
   const presets = COLOR_PRESETS[opts.type] ?? COLOR_PRESETS.pixelMosaic;
 
   const updateColor = (i: number, val: string) => {
@@ -149,6 +162,15 @@ export default function Sidebar({ opts, text, onUpdateOpts, onUpdateText, onExpo
     const base = [...opts.colors];
     while (base.length < count) base.push(base[base.length % base.length] || '#fff');
     onUpdateOpts({ colorMode: mode, colors: base.slice(0, count) });
+  };
+
+  // ── Image upload ────────────────────────────────────────────────────────────
+  const imgInputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleImageFiles = (files: FileList | null) => {
+    const file = files?.[0];
+    if (file && file.type.startsWith('image/')) onImageLoad(file);
   };
 
   // ── Custom font upload ──────────────────────────────────────────────────────
@@ -206,6 +228,59 @@ export default function Sidebar({ opts, text, onUpdateOpts, onUpdateText, onExpo
           onFocus={e => (e.target.style.borderColor = 'rgba(255,255,255,0.25)')}
           onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
         />
+      </div>
+
+      <Divider />
+
+      {/* Image upload */}
+      <div className="px-4 py-4">
+        <Label>Image mask</Label>
+
+        <input
+          ref={imgInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+          onChange={e => { handleImageFiles(e.target.files); e.target.value = ''; }}
+        />
+
+        {imgPreview ? (
+          /* Preview + controls */
+          <div>
+            <div className="relative rounded-lg overflow-hidden mb-3" style={{ border: '1px solid rgba(255,255,255,0.12)' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imgPreview} alt="mask source" className="w-full object-contain"
+                style={{ maxHeight: 96, background: 'rgba(255,255,255,0.04)', display: 'block' }} />
+              <button
+                onClick={onImageClear}
+                className="absolute top-1.5 right-1.5 w-5 h-5 rounded flex items-center justify-center text-[10px] cursor-pointer transition-all duration-150"
+                style={{ background: 'rgba(0,0,0,0.7)', color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.15)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'rgba(239,68,68,0.9)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; }}
+              >✕</button>
+            </div>
+            <SliderRow
+              label="Threshold" value={imgThreshold} min={0} max={254}
+              onChange={onImgThreshold}
+            />
+            <Toggle label="Invert mask" checked={imgInvert} onChange={onImgInvert} />
+          </div>
+        ) : (
+          /* Drop zone */
+          <div
+            className="flex flex-col items-center justify-center gap-1.5 rounded-lg cursor-pointer transition-all duration-150 select-none"
+            style={{
+              padding: '20px 12px',
+              border: `1px ${dragOver ? 'solid' : 'dashed'} ${dragOver ? 'rgba(96,165,250,0.55)' : 'rgba(255,255,255,0.14)'}`,
+              background: dragOver ? 'rgba(96,165,250,0.06)' : 'rgba(255,255,255,0.02)',
+            }}
+            onClick={() => imgInputRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={e => { e.preventDefault(); setDragOver(false); handleImageFiles(e.dataTransfer.files); }}
+          >
+            <span className="text-lg" style={{ opacity: 0.3 }}>⬆</span>
+            <span className="text-[11px]" style={{ color: 'rgba(255,255,255,0.4)' }}>Drop image or click to browse</span>
+            <span className="text-[9px]" style={{ color: 'rgba(255,255,255,0.2)' }}>PNG · JPG · SVG · WEBP · Ctrl+V to paste</span>
+          </div>
+        )}
       </div>
 
       <Divider />
