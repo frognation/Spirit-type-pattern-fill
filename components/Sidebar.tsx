@@ -1,80 +1,69 @@
 'use client';
 
-import { PatternOptions, TextConfig, PatternType, ColorMode } from '@/lib/types';
-
-const PATTERN_LIST: { type: PatternType; label: string; icon: string; desc: string }[] = [
-  { type: 'pixelMosaic',  label: 'Pixel',    icon: '▪', desc: 'Colored grid squares' },
-  { type: 'circleArray',  label: 'Circle',   icon: '●', desc: 'Dot / circle grid' },
-  { type: 'checkerboard', label: 'Checker',  icon: '◼', desc: 'Alternating squares' },
-  { type: 'stripeFill',   label: 'Stripe',   icon: '≡', desc: 'Horizontal stripes' },
-  { type: 'dotField',     label: 'Dots',     icon: '⋯', desc: 'Scattered dot field' },
-  { type: 'waveChecker',  label: 'Wave',     icon: '〰', desc: 'Warped checkerboard' },
-];
+import { PatternOptions, TextConfig, ColorMode } from '@/lib/types';
 
 const FONT_LIST = [
-  { label: 'Inter', value: 'Inter, sans-serif' },
-  { label: 'Impact', value: 'Impact, Haettenschweiler, sans-serif' },
-  { label: 'Georgia', value: 'Georgia, serif' },
-  { label: 'Courier', value: '"Courier New", Courier, monospace' },
-  { label: 'Arial Black', value: '"Arial Black", Gadget, sans-serif' },
-  { label: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+  { label: 'Monospace', value: 'ui-monospace, monospace' },
+  { label: 'Impact',    value: 'Impact, Haettenschweiler, sans-serif' },
+  { label: 'Georgia',   value: 'Georgia, serif' },
+  { label: 'Courier',   value: '"Courier New", monospace' },
+  { label: 'Arial Black', value: '"Arial Black", sans-serif' },
+  { label: 'System UI', value: 'system-ui, sans-serif' },
 ];
 
-const COLOR_PRESETS: Record<PatternType, string[][]> = {
+type ColorPresets = { colors: string[]; bg: string }[];
+
+const COLOR_PRESETS: Record<string, ColorPresets> = {
   pixelMosaic: [
-    ['#FF2D78','#00CC66','#FFCC00','#FF6B00','#0066FF','#CC0044'],
-    ['#FF0080','#00FFCC','#FFFF00','#FF8800'],
-    ['#FFFFFF','#CCCCCC','#888888','#444444'],
-    ['#FF6B6B','#FFE66D','#A8E063','#56CCF2'],
+    { colors: ['#FF2D78','#00CC66','#FFCC00','#FF6B00','#0066FF','#CC0044'], bg: '#0a0a0a' },
+    { colors: ['#FF0080','#00FFCC','#FFFF00','#FF8800'], bg: '#0a0a0a' },
+    { colors: ['#FFFFFF','#AAAAAA','#555555','#222222'], bg: '#0a0a0a' },
+    { colors: ['#FF6B6B','#FFE66D','#A8E063','#56CCF2'], bg: '#111111' },
   ],
   circleArray: [
-    ['#4488FF','#ffffff'],
-    ['#FF2D78','#FFE8F0'],
-    ['#00CC66','#001a0d'],
-    ['#FFCC00','#1a1000'],
+    { colors: ['#4488FF','#ffffff'], bg: '#0a0a0a' },
+    { colors: ['#FF2D78','#FFE8F0'], bg: '#0a0a0a' },
+    { colors: ['#00CC66','#003311'], bg: '#0a0a0a' },
+    { colors: ['#FFCC00','#2a1f00'], bg: '#111111' },
   ],
   checkerboard: [
-    ['#2ECC71','#0a0a0a'],
-    ['#FF2D78','#f5f5f0'],
-    ['#4488FF','#0a0a0a'],
-    ['#FFCC00','#1a1000'],
+    { colors: ['#2ECC71','#0a0a0a'], bg: '#f5f5f0' },
+    { colors: ['#FF2D78','#f5f5f0'], bg: '#f5f5f0' },
+    { colors: ['#4488FF','#0a0a0a'], bg: '#f5f5f0' },
+    { colors: ['#FFCC00','#111111'], bg: '#f5f5f0' },
   ],
   stripeFill: [
-    ['#FF2D9E','#1a3320'],
-    ['#4488FF','#0a0a0a'],
-    ['#FFCC00','#1a1000'],
-    ['#FF2D78','#2D0020'],
+    { colors: ['#FF2D9E','#1a3320'], bg: '#f0ede6' },
+    { colors: ['#4488FF','#0a0a0a'], bg: '#f0ede6' },
+    { colors: ['#FFCC00','#1a1000'], bg: '#f0ede6' },
+    { colors: ['#FF2D78','#2D0020'], bg: '#f0ede6' },
   ],
   dotField: [
-    ['#ffffff','#444444'],
-    ['#FF2D78','#2D0020'],
-    ['#00CC66','#001a0d'],
-    ['#FFCC00','#1a1000'],
+    { colors: ['#ffffff','#444444'], bg: '#111111' },
+    { colors: ['#FF2D78','#2D0020'], bg: '#111111' },
+    { colors: ['#00CC66','#001a0d'], bg: '#111111' },
+    { colors: ['#FFCC00','#1a1000'], bg: '#111111' },
   ],
   waveChecker: [
-    ['#4488EE','#ffffff'],
-    ['#FF2D78','#ffffff'],
-    ['#00CC66','#ffffff'],
-    ['#FFCC00','#ffffff'],
+    { colors: ['#4488EE','#ffffff'], bg: '#CC2200' },
+    { colors: ['#FF2D78','#ffffff'], bg: '#001133' },
+    { colors: ['#00CC66','#ffffff'], bg: '#001a0d' },
+    { colors: ['#FFCC00','#111111'], bg: '#1a1000' },
   ],
 };
 
-interface Props {
-  opts: PatternOptions;
-  text: TextConfig;
-  dark: boolean;
-  onSelectPattern: (t: PatternType) => void;
-  onUpdateOpts: (p: Partial<PatternOptions>) => void;
-  onUpdateText: (p: Partial<TextConfig>) => void;
-  onExport: () => void;
+// ── Sub-components ──────────────────────────────────────────────────────────
+
+function Divider() {
+  return <div className="mx-4" style={{ height: 1, background: 'rgba(255,255,255,0.07)' }} />;
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
-      <div className="text-[10px] font-semibold tracking-[0.16em] uppercase mb-3" style={{ color: 'var(--text-muted)' }}>
-        {title}
-      </div>
+    <div
+      className="text-[10px] uppercase tracking-[0.18em] mb-2"
+      style={{ color: 'rgba(255,255,255,0.25)' }}
+    >
       {children}
     </div>
   );
@@ -87,24 +76,95 @@ function SliderRow({
   step?: number; onChange: (v: number) => void; unit?: string;
 }) {
   return (
-    <div className="flex items-center gap-2 mb-3">
-      <span className="text-xs w-20 shrink-0" style={{ color: 'var(--text-muted)' }}>{label}</span>
+    <div className="flex items-center gap-3 mb-3">
+      <span className="text-[10px] w-[72px] shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        {label}
+      </span>
       <input
-        type="range"
-        min={min} max={max} step={step}
+        type="range" min={min} max={max} step={step}
         value={value}
         onChange={e => onChange(Number(e.target.value))}
         className="flex-1"
       />
-      <span className="text-xs w-8 text-right font-mono shrink-0" style={{ color: 'var(--text)' }}>
+      <span
+        className="text-[11px] w-7 text-right tabular-nums shrink-0"
+        style={{ color: 'rgba(255,255,255,0.55)' }}
+      >
         {value}{unit}
       </span>
     </div>
   );
 }
 
-export default function Sidebar({ opts, text, onSelectPattern, onUpdateOpts, onUpdateText, onExport }: Props) {
-  const presets = COLOR_PRESETS[opts.type];
+function Toggle({
+  label, checked, onChange,
+}: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-center gap-2 cursor-pointer mb-2">
+      <div
+        onClick={() => onChange(!checked)}
+        className="relative w-7 h-4 rounded-full transition-all duration-150 cursor-pointer shrink-0"
+        style={{
+          background: checked ? 'rgba(96,165,250,0.6)' : 'rgba(255,255,255,0.12)',
+          border: `1px solid ${checked ? 'rgba(96,165,250,0.8)' : 'rgba(255,255,255,0.15)'}`,
+        }}
+      >
+        <div
+          className="absolute top-0.5 w-3 h-3 rounded-full transition-all duration-150"
+          style={{
+            background: '#fff',
+            left: checked ? '14px' : '2px',
+          }}
+        />
+      </div>
+      <span className="text-[10px]" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</span>
+    </label>
+  );
+}
+
+function SelectRow({
+  label, value, options, onChange,
+}: {
+  label: string;
+  value: string;
+  options: { label: string; value: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <span className="text-[10px] w-[72px] shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        {label}
+      </span>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="flex-1 text-[10px] rounded-lg px-2 py-1.5 outline-none transition-colors duration-150"
+        style={{
+          background: 'rgba(255,255,255,0.05)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          color: 'rgba(255,255,255,0.7)',
+        }}
+      >
+        {options.map(o => (
+          <option key={o.value} value={o.value} style={{ background: '#111' }}>{o.label}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+// ── Main Sidebar ─────────────────────────────────────────────────────────────
+
+interface Props {
+  opts: PatternOptions;
+  text: TextConfig;
+  onUpdateOpts: (p: Partial<PatternOptions>) => void;
+  onUpdateText: (p: Partial<TextConfig>) => void;
+  onExport: () => void;
+}
+
+export default function Sidebar({ opts, text, onUpdateOpts, onUpdateText, onExport }: Props) {
+  const presets = COLOR_PRESETS[opts.type] ?? COLOR_PRESETS.pixelMosaic;
 
   const updateColor = (i: number, val: string) => {
     const colors = [...opts.colors];
@@ -114,251 +174,216 @@ export default function Sidebar({ opts, text, onSelectPattern, onUpdateOpts, onU
 
   const setColorMode = (mode: ColorMode) => {
     const count = { mono: 1, dual: 2, tri: 3, multi: 6 }[mode];
-    const base = opts.colors.slice(0, count);
+    const base = [...opts.colors];
     while (base.length < count) base.push(opts.colors[base.length % opts.colors.length] || '#ffffff');
-    onUpdateOpts({ colorMode: mode, colors: base });
-  };
-
-  const applyPreset = (preset: string[]) => {
-    const mode: ColorMode =
-      preset.length === 1 ? 'mono' :
-      preset.length === 2 ? 'dual' :
-      preset.length === 3 ? 'tri' : 'multi';
-    onUpdateOpts({ colors: preset, colorMode: mode });
+    onUpdateOpts({ colorMode: mode, colors: base.slice(0, count) });
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Pattern selector */}
-      <Section title="Pattern">
-        <div className="grid grid-cols-3 gap-1.5">
-          {PATTERN_LIST.map(p => (
-            <button
-              key={p.type}
-              onClick={() => onSelectPattern(p.type)}
-              className="flex flex-col items-center gap-1 p-2 rounded-lg text-xs transition-all"
-              style={{
-                background: opts.type === p.type ? 'var(--accent)' : 'var(--bg-input)',
-                color: opts.type === p.type ? 'var(--accent-fg)' : 'var(--text)',
-                border: `1px solid ${opts.type === p.type ? 'transparent' : 'var(--border)'}`,
-              }}
-            >
-              <span className="text-lg leading-none">{p.icon}</span>
-              <span className="font-medium text-[10px] tracking-wide">{p.label}</span>
-            </button>
-          ))}
-        </div>
-        <p className="text-[10px] mt-2" style={{ color: 'var(--text-muted)' }}>
-          {PATTERN_LIST.find(p => p.type === opts.type)?.desc}
-        </p>
-      </Section>
+    <div className="flex flex-col h-full overflow-y-auto">
 
-      {/* Size & spacing */}
-      <Section title="Size & Spacing">
-        <SliderRow
-          label="Cell size"
-          value={opts.cellSize}
-          min={4} max={60}
-          onChange={v => onUpdateOpts({ cellSize: v })}
-          unit="px"
-        />
-        <SliderRow
-          label="Gap"
-          value={opts.gap}
-          min={0} max={12}
-          onChange={v => onUpdateOpts({ gap: v })}
-          unit="px"
-        />
-        {(opts.type === 'pixelMosaic' || opts.type === 'checkerboard' || opts.type === 'waveChecker') && (
-          <SliderRow
-            label="Roundness"
-            value={Math.round(opts.roundness * 100)}
-            min={0} max={100}
-            onChange={v => onUpdateOpts({ roundness: v / 100 })}
-            unit="%"
+      {/* Header */}
+      <div className="px-4 pt-5 pb-4">
+        <div className="text-[10px] uppercase tracking-[0.22em] mb-4" style={{ color: 'rgba(255,255,255,0.9)' }}>
+          Spirit
+        </div>
+
+        {/* Text input */}
+        <div className="mb-1">
+          <SectionLabel>Text</SectionLabel>
+          <input
+            value={text.text}
+            onChange={e => onUpdateText({ text: e.target.value.toUpperCase() })}
+            maxLength={12}
+            placeholder="TYPE HERE"
+            className="w-full text-[13px] font-mono uppercase tracking-[0.25em] outline-none px-3 py-2 rounded-lg transition-colors duration-150"
+            style={{
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.85)',
+            }}
+            onFocus={e => (e.target.style.borderColor = 'rgba(255,255,255,0.25)')}
+            onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
           />
+        </div>
+      </div>
+
+      <Divider />
+
+      {/* Size & Spacing */}
+      <div className="px-4 py-4">
+        <SectionLabel>Size &amp; Spacing</SectionLabel>
+        <SliderRow label="Cell size" value={opts.cellSize} min={4} max={60} onChange={v => onUpdateOpts({ cellSize: v })} unit="px" />
+        <SliderRow label="Gap" value={opts.gap} min={0} max={12} onChange={v => onUpdateOpts({ gap: v })} unit="px" />
+        {(opts.type === 'pixelMosaic' || opts.type === 'checkerboard' || opts.type === 'waveChecker') && (
+          <SliderRow label="Roundness" value={Math.round(opts.roundness * 100)} min={0} max={100} onChange={v => onUpdateOpts({ roundness: v / 100 })} unit="%" />
         )}
         {opts.type === 'waveChecker' && (
-          <SliderRow
-            label="Wave"
-            value={Math.round(opts.waveIntensity * 100)}
-            min={0} max={100}
-            onChange={v => onUpdateOpts({ waveIntensity: v / 100 })}
-            unit="%"
-          />
+          <SliderRow label="Wave" value={Math.round(opts.waveIntensity * 100)} min={0} max={100} onChange={v => onUpdateOpts({ waveIntensity: v / 100 })} unit="%" />
         )}
         {(opts.type === 'pixelMosaic' || opts.type === 'circleArray' || opts.type === 'dotField') && (
-          <label className="flex items-center gap-2 text-xs cursor-pointer mb-1">
-            <input
-              type="checkbox"
-              checked={opts.hexGrid}
-              onChange={e => onUpdateOpts({ hexGrid: e.target.checked })}
-              className="w-3 h-3"
-            />
-            <span style={{ color: 'var(--text-muted)' }}>Hex grid offset</span>
-          </label>
+          <Toggle label="Hex grid offset" checked={opts.hexGrid} onChange={v => onUpdateOpts({ hexGrid: v })} />
         )}
         {(opts.type === 'pixelMosaic' || opts.type === 'dotField') && (
-          <label className="flex items-center gap-2 text-xs cursor-pointer">
-            <input
-              type="checkbox"
-              checked={opts.randomize}
-              onChange={e => onUpdateOpts({ randomize: e.target.checked })}
-              className="w-3 h-3"
-            />
-            <span style={{ color: 'var(--text-muted)' }}>Randomize colors</span>
-          </label>
+          <Toggle label="Randomize colors" checked={opts.randomize} onChange={v => onUpdateOpts({ randomize: v })} />
         )}
-      </Section>
+      </div>
+
+      <Divider />
 
       {/* Colors */}
-      <Section title="Colors">
-        {/* Color mode tabs */}
-        <div className="flex gap-1 mb-3">
-          {(['mono','dual','tri','multi'] as ColorMode[]).map(m => (
-            <button
-              key={m}
-              onClick={() => setColorMode(m)}
-              className="flex-1 text-[10px] py-1 rounded font-medium tracking-wide transition-all"
-              style={{
-                background: opts.colorMode === m ? 'var(--accent)' : 'var(--bg-input)',
-                color: opts.colorMode === m ? 'var(--accent-fg)' : 'var(--text-muted)',
-                border: `1px solid ${opts.colorMode === m ? 'transparent' : 'var(--border)'}`,
-              }}
-            >
-              {m === 'mono' ? '1' : m === 'dual' ? '2' : m === 'tri' ? '3' : '6+'}
-            </button>
-          ))}
+      <div className="px-4 py-4">
+        <SectionLabel>Colors</SectionLabel>
+
+        {/* Color mode */}
+        <div className="flex gap-1.5 mb-3">
+          {(['mono','dual','tri','multi'] as ColorMode[]).map(m => {
+            const active = opts.colorMode === m;
+            return (
+              <button
+                key={m}
+                onClick={() => setColorMode(m)}
+                className="flex-1 text-[10px] uppercase tracking-wider py-1.5 rounded-lg transition-all duration-150 cursor-pointer"
+                style={
+                  active
+                    ? { border: '1px solid rgba(96,165,250,0.55)', background: 'rgba(96,165,250,0.14)', color: 'rgba(147,197,253,0.9)' }
+                    : { border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.4)' }
+                }
+                onMouseEnter={e => { if (!active) { const el = e.currentTarget; el.style.borderColor = 'rgba(255,255,255,0.25)'; el.style.color = 'rgba(255,255,255,0.7)'; } }}
+                onMouseLeave={e => { if (!active) { const el = e.currentTarget; el.style.borderColor = 'rgba(255,255,255,0.1)'; el.style.color = 'rgba(255,255,255,0.4)'; } }}
+              >
+                {m === 'mono' ? '1' : m === 'dual' ? '2' : m === 'tri' ? '3' : '6+'}
+              </button>
+            );
+          })}
         </div>
 
         {/* Color swatches */}
-        <div className="flex gap-2 flex-wrap mb-3">
+        <div className="flex gap-2 mb-3 flex-wrap">
           {opts.colors.map((c, i) => (
             <label
               key={i}
-              className="relative w-7 h-7 rounded-md overflow-hidden cursor-pointer shadow-sm"
-              style={{ border: '2px solid var(--border)' }}
-              title={`Color ${i + 1}`}
+              className="relative cursor-pointer"
+              style={{
+                width: 28, height: 28,
+                borderRadius: 5,
+                border: '1px solid rgba(255,255,255,0.18)',
+                overflow: 'hidden',
+                background: c,
+              }}
+              title={`Color ${i + 1}: ${c}`}
             >
               <input
                 type="color"
                 value={c}
                 onChange={e => updateColor(i, e.target.value)}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }}
               />
-              <div className="w-full h-full rounded" style={{ background: c }} />
             </label>
           ))}
         </div>
 
-        {/* Background color */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Background</span>
+        {/* Background */}
+        <div className="flex items-center gap-3 mb-3">
+          <span className="text-[10px] w-[72px] shrink-0" style={{ color: 'rgba(255,255,255,0.4)' }}>Background</span>
           <label
-            className="relative w-7 h-7 rounded-md overflow-hidden cursor-pointer shadow-sm"
-            style={{ border: '2px solid var(--border)' }}
+            className="relative cursor-pointer"
+            style={{
+              width: 28, height: 28,
+              borderRadius: 5,
+              border: '1px solid rgba(255,255,255,0.18)',
+              overflow: 'hidden',
+              background: opts.bg,
+            }}
           >
             <input
               type="color"
               value={opts.bg}
               onChange={e => onUpdateOpts({ bg: e.target.value })}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              style={{ opacity: 0, position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'pointer' }}
             />
-            <div className="w-full h-full rounded" style={{ background: opts.bg }} />
           </label>
         </div>
 
-        {/* Color presets */}
-        <div className="text-[10px] mb-2" style={{ color: 'var(--text-muted)' }}>Presets</div>
+        {/* Presets */}
+        <div className="text-[9px] uppercase tracking-wider mb-2" style={{ color: 'rgba(255,255,255,0.2)' }}>Presets</div>
         <div className="flex gap-2 flex-wrap">
           {presets.map((preset, i) => (
             <button
               key={i}
-              onClick={() => applyPreset(preset)}
-              className="flex gap-0.5 p-1 rounded"
-              style={{ border: '1px solid var(--border)', background: 'var(--bg-input)' }}
-              title={preset.join(', ')}
+              onClick={() => onUpdateOpts({ colors: preset.colors, bg: preset.bg })}
+              className="flex gap-0.5 p-1 rounded-md cursor-pointer transition-all duration-150"
+              style={{ border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
             >
-              {preset.slice(0, 4).map((c, j) => (
-                <div key={j} className="w-3 h-3 rounded-sm" style={{ background: c }} />
+              {preset.colors.slice(0, 4).map((c, j) => (
+                <div key={j} style={{ width: 10, height: 10, borderRadius: 2, background: c }} />
               ))}
             </button>
           ))}
         </div>
-      </Section>
+      </div>
+
+      <Divider />
 
       {/* Typography */}
-      <Section title="Typography">
-        <SliderRow
-          label="Font size"
-          value={text.fontSize}
-          min={60} max={320}
-          step={4}
-          onChange={v => onUpdateText({ fontSize: v })}
-          unit="px"
+      <div className="px-4 py-4">
+        <SectionLabel>Typography</SectionLabel>
+        <SliderRow label="Font size" value={text.fontSize} min={60} max={320} step={4} onChange={v => onUpdateText({ fontSize: v })} unit="px" />
+        <SliderRow label="Spacing" value={text.letterSpacing} min={-20} max={60} onChange={v => onUpdateText({ letterSpacing: v })} unit="px" />
+        <SelectRow
+          label="Font"
+          value={text.fontFamily}
+          options={FONT_LIST}
+          onChange={v => onUpdateText({ fontFamily: v })}
         />
-        <SliderRow
-          label="Spacing"
-          value={text.letterSpacing}
-          min={-20} max={40}
-          onChange={v => onUpdateText({ letterSpacing: v })}
-          unit="px"
+        <SelectRow
+          label="Weight"
+          value={text.fontWeight}
+          options={[
+            { label: 'Regular', value: '400' },
+            { label: 'Medium', value: '500' },
+            { label: 'SemiBold', value: '600' },
+            { label: 'Bold', value: '700' },
+            { label: 'ExtraBold', value: '800' },
+            { label: 'Black', value: '900' },
+          ]}
+          onChange={v => onUpdateText({ fontWeight: v })}
         />
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs w-20 shrink-0" style={{ color: 'var(--text-muted)' }}>Font</span>
-          <select
-            value={text.fontFamily}
-            onChange={e => onUpdateText({ fontFamily: e.target.value })}
-            className="flex-1 text-xs rounded px-2 py-1.5 outline-none"
-            style={{
-              background: 'var(--bg-input)',
-              color: 'var(--text)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            {FONT_LIST.map(f => (
-              <option key={f.value} value={f.value}>{f.label}</option>
-            ))}
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs w-20 shrink-0" style={{ color: 'var(--text-muted)' }}>Weight</span>
-          <select
-            value={text.fontWeight}
-            onChange={e => onUpdateText({ fontWeight: e.target.value })}
-            className="flex-1 text-xs rounded px-2 py-1.5 outline-none"
-            style={{
-              background: 'var(--bg-input)',
-              color: 'var(--text)',
-              border: '1px solid var(--border)',
-            }}
-          >
-            {['400','500','600','700','800','900'].map(w => (
-              <option key={w} value={w}>{w === '400' ? 'Regular' : w === '500' ? 'Medium' : w === '600' ? 'SemiBold' : w === '700' ? 'Bold' : w === '800' ? 'ExtraBold' : 'Black'}</option>
-            ))}
-          </select>
-        </div>
-      </Section>
+      </div>
 
       {/* Spacer */}
       <div className="flex-1" />
 
+      <Divider />
+
       {/* Export */}
-      <div className="p-4 shrink-0">
+      <div className="px-4 py-4">
         <button
           onClick={onExport}
-          className="w-full py-2.5 rounded-lg text-sm font-semibold tracking-widest uppercase transition-all hover:opacity-80 active:scale-[0.98]"
+          className="w-full py-2 rounded-lg text-[10px] uppercase tracking-[0.18em] transition-all duration-150 cursor-pointer"
           style={{
-            background: 'var(--accent)',
-            color: 'var(--accent-fg)',
+            border: '1px solid rgba(96,165,250,0.5)',
+            background: 'rgba(96,165,250,0.14)',
+            color: 'rgba(147,197,253,0.9)',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'rgba(96,165,250,0.8)';
+            e.currentTarget.style.background = 'rgba(96,165,250,0.22)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'rgba(96,165,250,0.5)';
+            e.currentTarget.style.background = 'rgba(96,165,250,0.14)';
           }}
         >
           Export SVG
         </button>
-        <p className="text-[10px] text-center mt-2" style={{ color: 'var(--text-muted)' }}>
-          Exports at 2× resolution
-        </p>
+        <div className="text-[9px] text-center mt-1.5" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          2× resolution vector
+        </div>
       </div>
+
     </div>
   );
 }

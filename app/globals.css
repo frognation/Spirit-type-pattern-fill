@@ -1,101 +1,80 @@
 @import "tailwindcss";
 @variant dark (&:where(.dark, .dark *));
 
-:root {
-  --bg: #f0ede6;
-  --bg-panel: #e8e4dc;
-  --bg-input: #dedad2;
-  --border: rgba(0,0,0,0.12);
-  --text: #111111;
-  --text-muted: #666666;
-  --accent: #111111;
-  --accent-fg: #ffffff;
-  --slider-track: rgba(0,0,0,0.15);
-  --slider-thumb: #111111;
-}
+* { box-sizing: border-box; }
 
-.dark {
-  --bg: #0a0a0a;
-  --bg-panel: #141414;
-  --bg-input: #1c1c1c;
-  --border: rgba(255,255,255,0.08);
-  --text: #f0f0f0;
-  --text-muted: #888888;
-  --accent: #f0f0f0;
-  --accent-fg: #0a0a0a;
-  --slider-track: rgba(255,255,255,0.12);
-  --slider-thumb: #f0f0f0;
-}
-
-@theme inline {
-  --color-background: var(--bg);
-  --color-foreground: var(--text);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-geist-mono);
-}
-
-* {
-  box-sizing: border-box;
+html, body {
+  height: 100dvh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
-  margin: 0;
-  padding: 0;
-  height: 100dvh;
-  overflow: hidden;
+  background: #000;
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  -webkit-font-smoothing: antialiased;
 }
 
-html {
-  height: 100dvh;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 1px; }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 2px;
-}
-
-/* Custom range slider */
+/* Range slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
   height: 2px;
-  background: var(--slider-track);
+  background: hsla(0,0%,100%,.12);
   border-radius: 1px;
   outline: none;
   cursor: pointer;
+  transition: background 150ms;
 }
+input[type="range"]:hover { background: hsla(0,0%,100%,.2); }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: var(--slider-thumb);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.3);
   cursor: pointer;
-  transition: transform 0.15s;
 }
-
-input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
-
 input[type="range"]::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: var(--slider-thumb);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.3);
   cursor: pointer;
+}
+
+/* Color input */
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
   border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]::-webkit-color-swatch { border: none; border-radius: 3px; }
+
+/* Select */
+select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(255,255,255,0.3)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px !important;
 }
