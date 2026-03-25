@@ -1,8 +1,9 @@
 'use client';
 
+import { useRef, useState } from 'react';
 import { PatternOptions, TextConfig, ColorMode, PatternType } from '@/lib/types';
 
-const FONT_LIST = [
+const SYSTEM_FONTS = [
   { label: 'Monospace', value: 'ui-monospace, monospace' },
   { label: 'Impact',    value: 'Impact, Haettenschweiler, sans-serif' },
   { label: 'Georgia',   value: 'Georgia, serif' },
@@ -150,6 +151,40 @@ export default function Sidebar({ opts, text, onUpdateOpts, onUpdateText, onExpo
     onUpdateOpts({ colorMode: mode, colors: base.slice(0, count) });
   };
 
+  // ── Custom font upload ──────────────────────────────────────────────────────
+  const [customFonts, setCustomFonts] = useState<{ label: string; value: string }[]>([]);
+  const [fontLoading, setFontLoading] = useState(false);
+  const fontInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFontFile = async (file: File) => {
+    setFontLoading(true);
+    try {
+      const buf = await file.arrayBuffer();
+      // Derive a clean font name from the filename
+      const rawName = file.name.replace(/\.(ttf|otf|woff2?|eot)$/i, '');
+      const fontName = `__custom__${rawName}`;
+      const face = new FontFace(fontName, buf);
+      await face.load();
+      document.fonts.add(face);
+      const entry = { label: `↑ ${rawName}`, value: `"${fontName}", sans-serif` };
+      setCustomFonts(prev => {
+        // Replace if same name already loaded
+        const filtered = prev.filter(f => f.label !== entry.label);
+        return [...filtered, entry];
+      });
+      onUpdateText({ fontFamily: entry.value });
+    } catch {
+      alert('Font load failed. Please try a TTF, OTF, WOFF or WOFF2 file.');
+    } finally {
+      setFontLoading(false);
+    }
+  };
+
+  const FONT_LIST = [
+    ...SYSTEM_FONTS,
+    ...customFonts,
+  ];
+
   const showRoundness = ['pixelMosaic','checkerboard','contourChecker','ledMatrix'].includes(opts.type);
   const showHexGrid   = ['pixelMosaic','circleArray','outlineCircles'].includes(opts.type);
   const showRandomize = ['pixelMosaic','blockMosaic','ledMatrix','vertBars'].includes(opts.type);
@@ -272,6 +307,52 @@ export default function Sidebar({ opts, text, onUpdateOpts, onUpdateText, onExpo
             { label: 'ExtraBold', value: '800' }, { label: 'Black', value: '900' },
           ]}
           onChange={v => onUpdateText({ fontWeight: v })} />
+
+        {/* Local font upload */}
+        <input
+          ref={fontInputRef}
+          type="file"
+          accept=".ttf,.otf,.woff,.woff2"
+          style={{ display: 'none' }}
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleFontFile(f); e.target.value = ''; }}
+        />
+        <button
+          onClick={() => fontInputRef.current?.click()}
+          disabled={fontLoading}
+          className="w-full py-1.5 mt-1 rounded-lg text-[10px] uppercase tracking-[0.14em] transition-all duration-150 cursor-pointer"
+          style={{
+            border: '1px solid rgba(255,255,255,0.12)',
+            background: 'rgba(255,255,255,0.03)',
+            color: fontLoading ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.45)',
+          }}
+          onMouseEnter={e => { if (!fontLoading) { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.28)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; } }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = fontLoading ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.45)'; }}
+        >
+          {fontLoading ? 'Loading…' : '↑ Upload Font  (TTF · OTF · WOFF)'}
+        </button>
+        {customFonts.length > 0 && (
+          <div className="mt-2 flex flex-col gap-1">
+            {customFonts.map(f => (
+              <div key={f.value} className="flex items-center justify-between">
+                <span className="text-[9px] truncate" style={{ color: 'rgba(255,255,255,0.35)', maxWidth: 160 }}>
+                  {f.label}
+                </span>
+                <button
+                  onClick={() => {
+                    setCustomFonts(prev => prev.filter(x => x.value !== f.value));
+                    if (text.fontFamily === f.value) onUpdateText({ fontFamily: SYSTEM_FONTS[0].value });
+                  }}
+                  className="text-[9px] cursor-pointer"
+                  style={{ color: 'rgba(239,68,68,0.5)' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(239,68,68,0.8)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(239,68,68,0.5)')}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex-1" />
